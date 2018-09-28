@@ -17,43 +17,43 @@ import numpy as np
 logger = getLogger()
 
 
-def load_dictionary(path, word2id1, word2id2):
-    """
-    Return a torch tensor of size (n, 2) where n is the size of the
-    loader dictionary, and sort it by source word frequency.
-    """
-    assert os.path.isfile(path)
+# def load_dictionary(path, word2id1, word2id2):
+#     """
+#     Return a torch tensor of size (n, 2) where n is the size of the
+#     loader dictionary, and sort it by source word frequency.
+#     """
+#     assert os.path.isfile(path)
 
-    pairs = []
-    not_found = 0
-    not_found1 = 0
-    not_found2 = 0
+#     pairs = []
+#     not_found = 0
+#     not_found1 = 0
+#     not_found2 = 0
 
-    with io.open(path, 'r', encoding='utf-8') as f:
-        for _, line in enumerate(f):
-            assert line == line.lower()
-            word1, word2 = line.rstrip().split()
-            if word1 in word2id1 and word2 in word2id2:
-                pairs.append((word1, word2))
-            else:
-                not_found += 1
-                not_found1 += int(word1 not in word2id1)
-                not_found2 += int(word2 not in word2id2)
+#     with io.open(path, 'r', encoding='utf-8') as f:
+#         for _, line in enumerate(f):
+#             assert line == line.lower()
+#             word1, word2 = line.rstrip().split()
+#             if word1 in word2id1 and word2 in word2id2:
+#                 pairs.append((word1, word2))
+#             else:
+#                 not_found += 1
+#                 not_found1 += int(word1 not in word2id1)
+#                 not_found2 += int(word2 not in word2id2)
 
-    logger.info("Found %i pairs of words in the dictionary (%i unique). "
-                "%i other pairs contained at least one unknown word "
-                "(%i in lang1, %i in lang2)"
-                % (len(pairs), len(set([x for x, _ in pairs])),
-                   not_found, not_found1, not_found2))
+#     logger.info("Found %i pairs of words in the dictionary (%i unique). "
+#                 "%i other pairs contained at least one unknown word "
+#                 "(%i in lang1, %i in lang2)"
+#                 % (len(pairs), len(set([x for x, _ in pairs])),
+#                    not_found, not_found1, not_found2))
 
-    # sort the dictionary by source word frequencies
-    pairs = sorted(pairs, key=lambda x: word2id1[x[0]])
-    dico = torch.LongTensor(len(pairs), 2)
-    for i, (word1, word2) in enumerate(pairs):
-        dico[i, 0] = word2id1[word1]
-        dico[i, 1] = word2id2[word2]
+#     # sort the dictionary by source word frequencies
+#     pairs = sorted(pairs, key=lambda x: word2id1[x[0]])
+#     dico = torch.LongTensor(len(pairs), 2)
+#     for i, (word1, word2) in enumerate(pairs):
+#         dico[i, 0] = word2id1[word1]
+#         dico[i, 1] = word2id2[word2]
 
-    return dico
+#     return dico
 
 
 
@@ -239,7 +239,8 @@ def get_candidates(emb1, emb2, params):
 # num_words is the number of words to query K
 # dictionary_path is the dictionary you want to query from
 
-def build_dictionary(src_emb, tgt_emb, params, s2t_candidates=None, t2s_candidates=None, active_learn=None, num_words=None, dictionary_path=None, word2id1=None, word2id2=None):
+def build_dictionary(src_emb, tgt_emb, params, s2t_candidates=None, t2s_candidates=None, active_learn=None,
+                     num_words=None, dictionary_path=None, word2id1=None, word2id2=None):
     """
     Build a training dictionary given current embeddings / mapping.
     """

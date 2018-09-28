@@ -75,6 +75,12 @@ parser.add_argument("--tgt_emb", type=str, default="", help="Reload target embed
 parser.add_argument("--normalize_embeddings", type=str, default="", help="Normalize embeddings before training")
 
 
+# active learning
+parser.add_argument("--AL", type=str, default="", help="Active Learning Strategy (random)")
+parser.add_argument("--num_AL_words", type=int, default=500, help="Number of Active Learning Words")
+
+        
+
 # parse parameters
 params = parser.parse_args()
 

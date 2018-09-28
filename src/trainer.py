@@ -164,7 +164,14 @@ class Trainer(object):
         tgt_emb = self.tgt_emb.weight.data
         src_emb = src_emb / src_emb.norm(2, 1, keepdim=True).expand_as(src_emb)
         tgt_emb = tgt_emb / tgt_emb.norm(2, 1, keepdim=True).expand_as(tgt_emb)
-        self.dico = build_dictionary(src_emb, tgt_emb, self.params)
+
+        if self.params.AL != None:            
+            dico_filename = '%s-%s.0-5000.txt' % (self.params.src_lang, self.params.tgt_lang)
+            dico_path = os.path.join(DIC_EVAL_PATH, filename)
+            self.dico = build_dictionary(src_emb, tgt_emb, self.params, AL=self.params.AL, num_words=self.params.num_AL_words, dictionary_path=dico_path
+                word2id1=self.src_dico.word2id, word2id2=self.tgt_dico.word2id)        
+        else:    
+            self.dico = build_dictionary(src_emb, tgt_emb, self.params)
 
     def procrustes(self):
         """
