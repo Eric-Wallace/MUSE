@@ -260,6 +260,14 @@ def clip_parameters(model, clip):
         for x in model.parameters():
             x.data.clamp_(-clip, clip)
 
+def google_query(word):
+    import os
+    print(word)
+    command = "curl -s -X POST -H \"Content-Type: application/json\"     -H \"Authorization: Bearer \"$(gcloud auth application-default print-access-token) --data \"{ \'q\': \'"
+    command += word 
+    command += "\', \'source\': \'en\', \'target\': \'es\', \'format\': \'text\' }\" \"https://translation.googleapis.com/language/translate/v2\""
+    #os.system(command)
+
 
 def read_txt_embeddings(params, source, full_vocab):
     """
@@ -297,6 +305,7 @@ def read_txt_embeddings(params, source, full_vocab):
                     assert vect.shape == (_emb_dim_file,), i
                     word2id[word] = len(word2id)
                     vectors.append(vect[None])
+                    google_query(word)
             if params.max_vocab > 0 and len(word2id) >= params.max_vocab and not full_vocab:
                 break
 
