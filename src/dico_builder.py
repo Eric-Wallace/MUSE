@@ -243,8 +243,6 @@ def get_candidates(emb1, emb2, params):
         logger.info("Selected %i / %i pairs above the confidence threshold." % (mask.sum(), diff.size(0)))
         mask = mask.unsqueeze(1).expand_as(all_pairs).clone()
         all_pairs = all_pairs.masked_select(mask).view(-1, 2)
-    print("all pairs now")
-    print(all_pairs)
     return all_pairs
 
 def build_dictionary(src_emb, tgt_emb, params, s2t_candidates=None, t2s_candidates=None, AL=None,
