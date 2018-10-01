@@ -49,7 +49,7 @@ def AL_leastFrequent(current_dico, emb1, emb2, num_words, dictionary_path, word2
         new_dico_torch[index, 1] = word2
 
     # add the words to current dictionary    
-    return torch.cat((current_dico,new_dico),0)            
+    return torch.cat((current_dico,new_dico_torch),0)            
 
 def AL_mostFrequent(current_dico, emb1, emb2, num_words, dictionary_path, word2id1, word2id2):
     assert os.path.isfile(dictionary_path)
@@ -84,7 +84,7 @@ def AL_mostFrequent(current_dico, emb1, emb2, num_words, dictionary_path, word2i
         new_dico_torch[index, 1] = word2
 
     # add the words to current dictionary    
-    return torch.cat((current_dico,new_dico),0)            
+    return torch.cat((current_dico,new_dico_torch),0)            
 
 def AL_random(current_dico, emb1, emb2, num_words, dictionary_path, word2id1, word2id2):
     assert os.path.isfile(dictionary_path)
@@ -119,7 +119,7 @@ def AL_random(current_dico, emb1, emb2, num_words, dictionary_path, word2id1, wo
         new_dico_torch[index, 1] = word2
 
     # add the words to current dictionary    
-    return torch.cat((current_dico,new_dico),0)        
+    return torch.cat((current_dico,new_dico_torch),0)        
 
 def get_candidates(emb1, emb2, params):
     """
@@ -243,8 +243,6 @@ def get_candidates(emb1, emb2, params):
         logger.info("Selected %i / %i pairs above the confidence threshold." % (mask.sum(), diff.size(0)))
         mask = mask.unsqueeze(1).expand_as(all_pairs).clone()
         all_pairs = all_pairs.masked_select(mask).view(-1, 2)
-    print("all pairs now")
-    print(all_pairs)
     return all_pairs
 
 def build_dictionary(src_emb, tgt_emb, params, s2t_candidates=None, t2s_candidates=None, AL=None,
