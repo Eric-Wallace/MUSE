@@ -76,7 +76,7 @@ parser.add_argument("--normalize_embeddings", type=str, default="", help="Normal
 
 
 # active learning
-parser.add_argument("--AL", type=str, default="", help="Active Learning Strategy (random)")
+parser.add_argument("--AL", type=str, default="", help="Active Learning Strategy (random/mostFrequent/leastFrequent)")
 parser.add_argument("--num_AL_words", type=int, default=500, help="Number of Active Learning Words")
 
         

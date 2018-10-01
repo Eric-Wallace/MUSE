@@ -16,45 +16,75 @@ import io
 
 logger = getLogger()
 
+def AL_leastFrequent(current_dico, emb1, emb2, num_words, dictionary_path, word2id1, word2id2):
+    assert os.path.isfile(dictionary_path)
+    all_word_pairs = []
+    not_found = 0
+    not_found1 = 0
+    not_found2 = 0
 
-# def load_dictionary(path, word2id1, word2id2):
-#     """
-#     Return a torch tensor of size (n, 2) where n is the size of the
-#     loader dictionary, and sort it by source word frequency.
-#     """
-#     assert os.path.isfile(path)
+    # get the ground truth dictionary and fill up all_word_pairs
+    with io.open(dictionary_path, 'r', encoding='utf-8') as f:
+        for _, line in enumerate(f):
+            assert line == line.lower()
+            word1, word2 = line.rstrip().split()
+            if word1 in word2id1 and word2 in word2id2:  # if words exist                
+                all_word_pairs.append((word1, word2))
 
-#     pairs = []
-#     not_found = 0
-#     not_found1 = 0
-#     not_found2 = 0
+    # select least frequent words from the ground truth dictionary that are not present already    
+    all_word_pairs = sorted(all_word_pairs, key=lambda x: -1 * word2id1[x[0]])
+    new_dico = []    
+    num_words_added = 0
+    for word1, word2 in all_word_pairs:
+        if num_words_added == num_words:  # add num_words to the dico
+            break
+        if word1 not in current_dico[:,0]: # if word not already in dictionary (we wouldn't query a user for it)
+            new_dico.append((word2id1[word1], word2id2[word2]))
+            num_words_added = num_words_added + 1
+    
+    # make torch version of new_dico
+    new_dico_torch = torch.LongTensor(num_words_added, 2) 
+    for index, (word1, word2) in enumerate(new_dico):
+        new_dico_torch[index, 0] = word1
+        new_dico_torch[index, 1] = word2
 
-#     with io.open(path, 'r', encoding='utf-8') as f:
-#         for _, line in enumerate(f):
-#             assert line == line.lower()
-#             word1, word2 = line.rstrip().split()
-#             if word1 in word2id1 and word2 in word2id2:
-#                 pairs.append((word1, word2))
-#             else:
-#                 not_found += 1
-#                 not_found1 += int(word1 not in word2id1)
-#                 not_found2 += int(word2 not in word2id2)
+    # add the words to current dictionary    
+    return torch.cat((current_dico,new_dico_torch),0)            
 
-#     logger.info("Found %i pairs of words in the dictionary (%i unique). "
-#                 "%i other pairs contained at least one unknown word "
-#                 "(%i in lang1, %i in lang2)"
-#                 % (len(pairs), len(set([x for x, _ in pairs])),
-#                    not_found, not_found1, not_found2))
+def AL_mostFrequent(current_dico, emb1, emb2, num_words, dictionary_path, word2id1, word2id2):
+    assert os.path.isfile(dictionary_path)
+    all_word_pairs = []
+    not_found = 0
+    not_found1 = 0
+    not_found2 = 0
 
-#     # sort the dictionary by source word frequencies
-#     pairs = sorted(pairs, key=lambda x: word2id1[x[0]])
-#     dico = torch.LongTensor(len(pairs), 2)
-#     for i, (word1, word2) in enumerate(pairs):
-#         dico[i, 0] = word2id1[word1]
-#         dico[i, 1] = word2id2[word2]
+    # get the ground truth dictionary and fill up all_word_pairs
+    with io.open(dictionary_path, 'r', encoding='utf-8') as f:
+        for _, line in enumerate(f):
+            assert line == line.lower()
+            word1, word2 = line.rstrip().split()
+            if word1 in word2id1 and word2 in word2id2:  # if words exist                
+                all_word_pairs.append((word1, word2))
 
-#     return dico
+    # select most frequent words from the ground truth dictionary that are not present already    
+    all_word_pairs = sorted(all_word_pairs, key=lambda x: word2id1[x[0]])
+    new_dico = []    
+    num_words_added = 0
+    for word1, word2 in all_word_pairs:
+        if num_words_added == num_words:  # add num_words to the dico
+            break
+        if word1 not in current_dico[:,0]: # if word not already in dictionary (we wouldn't query a user for it)
+            new_dico.append((word2id1[word1], word2id2[word2]))
+            num_words_added = num_words_added + 1
+    
+    # make torch version of new_dico
+    new_dico_torch = torch.LongTensor(num_words_added, 2) 
+    for index, (word1, word2) in enumerate(new_dico):
+        new_dico_torch[index, 0] = word1
+        new_dico_torch[index, 1] = word2
 
+    # add the words to current dictionary    
+    return torch.cat((current_dico,new_dico_torch),0)            
 
 def AL_random(current_dico, emb1, emb2, num_words, dictionary_path, word2id1, word2id2):
     assert os.path.isfile(dictionary_path)
@@ -70,32 +100,26 @@ def AL_random(current_dico, emb1, emb2, num_words, dictionary_path, word2id1, wo
             word1, word2 = line.rstrip().split()
             if word1 in word2id1 and word2 in word2id2:  # if words exist                
                 all_word_pairs.append((word1, word2))
-            else:
-                not_found += 1
-                not_found1 += int(word1 not in word2id1)
-                not_found2 += int(word2 not in word2id2)
-
-    logger.info("Found %i pairs of words in the dictionary (%i unique). "
-                "%i other pairs contained at least one unknown word "
-                "(%i in lang1, %i in lang2)"
-                % (len(all_word_pairs), len(set([x for x, _ in all_word_pairs])),
-                   not_found, not_found1, not_found2))
 
     # select K random words from the ground truth dictionary that are not present already
     np.random.shuffle(all_word_pairs) # shuffle dictionary
-    new_dico = torch.LongTensor(num_words, 2)
+    new_dico = []    
     num_words_added = 0
     for word1, word2 in all_word_pairs:
         if num_words_added == num_words:  # add num_words to the dico
             break
-        if word1 not in current_dico[:,0]:                            # if word not already in dictionary (we wouldn't query a user for it)
-            new_dico[num_words_added, 0] = word2id1[word1]
-            new_dico[num_words_added, 1] = word2id2[word2]
+        if word1 not in current_dico[:,0]: # if word not already in dictionary (we wouldn't query a user for it)
+            new_dico.append((word2id1[word1], word2id2[word2]))
             num_words_added = num_words_added + 1
-    # add the words to current dictionary
-    current_dico = torch.cat((current_dico,new_dico),0)
-    return current_dico
+    
+    # make torch version of new_dico
+    new_dico_torch = torch.LongTensor(num_words_added, 2) 
+    for index, (word1, word2) in enumerate(new_dico):
+        new_dico_torch[index, 0] = word1
+        new_dico_torch[index, 1] = word2
 
+    # add the words to current dictionary    
+    return torch.cat((current_dico,new_dico_torch),0)        
 
 def get_candidates(emb1, emb2, params):
     """
@@ -219,11 +243,9 @@ def get_candidates(emb1, emb2, params):
         logger.info("Selected %i / %i pairs above the confidence threshold." % (mask.sum(), diff.size(0)))
         mask = mask.unsqueeze(1).expand_as(all_pairs).clone()
         all_pairs = all_pairs.masked_select(mask).view(-1, 2)
+    print("all pairs now")
+    print(all_pairs)
     return all_pairs
-
-# set active_learn == "random"
-# num_words is the number of words to query K
-# dictionary_path is the dictionary you want to query from
 
 def build_dictionary(src_emb, tgt_emb, params, s2t_candidates=None, t2s_candidates=None, AL=None,
                      num_words=None, dictionary_path=None, word2id1=None, word2id2=None):
@@ -263,4 +285,9 @@ def build_dictionary(src_emb, tgt_emb, params, s2t_candidates=None, t2s_candidat
     logger.info('New train dictionary of %i pairs.' % dico.size(0))
     if AL == 'random':
         dico = AL_random(dico, src_emb, tgt_emb, num_words=num_words, dictionary_path=dictionary_path, word2id1=word2id1, word2id2=word2id2) 
+    if AL == 'mostFrequent':
+        dico = AL_mostFrequent(dico, src_emb, tgt_emb, num_words=num_words, dictionary_path=dictionary_path, word2id1=word2id1, word2id2=word2id2) 
+    if AL == 'leastFrequent':
+        dico = AL_leastFrequent(dico, src_emb, tgt_emb, num_words=num_words, dictionary_path=dictionary_path, word2id1=word2id1, word2id2=word2id2)         
+        
     return dico.cuda() if params.cuda else dico
