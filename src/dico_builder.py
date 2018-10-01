@@ -93,10 +93,7 @@ def AL_random(current_dico, emb1, emb2, num_words, dictionary_path, word2id1, wo
             new_dico[num_words_added, 1] = word2id2[word2]
             num_words_added = num_words_added + 1
     # add the words to current dictionary
-    print(new_dico.shape)
-    print(current_dico.shape)
     current_dico = torch.cat((current_dico,new_dico),0)
-    print(current_dico.shape) 
     return current_dico
 
 
@@ -222,8 +219,6 @@ def get_candidates(emb1, emb2, params):
         logger.info("Selected %i / %i pairs above the confidence threshold." % (mask.sum(), diff.size(0)))
         mask = mask.unsqueeze(1).expand_as(all_pairs).clone()
         all_pairs = all_pairs.masked_select(mask).view(-1, 2)
-    print("all pairs now")
-    print(all_pairs)
     return all_pairs
 
 # set active_learn == "random"

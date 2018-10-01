@@ -51,8 +51,8 @@ parser.add_argument("--dis_smooth", type=float, default=0.1, help="Discriminator
 parser.add_argument("--dis_clip_weights", type=float, default=0, help="Clip discriminator weights (0 to disable)")
 # training adversarial
 parser.add_argument("--adversarial", type=bool_flag, default=True, help="Use adversarial training")
-parser.add_argument("--n_epochs", type=int, default=1, help="Number of epochs")
-parser.add_argument("--epoch_size", type=int, default=100, help="Iterations per epoch")
+parser.add_argument("--n_epochs", type=int, default=5, help="Number of epochs")
+parser.add_argument("--epoch_size", type=int, default=1000000, help="Iterations per epoch")
 parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
 parser.add_argument("--map_optimizer", type=str, default="sgd,lr=0.1", help="Mapping optimizer")
 parser.add_argument("--dis_optimizer", type=str, default="sgd,lr=0.1", help="Discriminator optimizer")
