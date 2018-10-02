@@ -6,6 +6,7 @@
 #
 
 import os
+import json
 import io
 import re
 import sys
@@ -260,20 +261,36 @@ def clip_parameters(model, clip):
         for x in model.parameters():
             x.data.clamp_(-clip, clip)
 
+def is_ascii(s):
+    return all(ord(c) < 128 for c in s)
+
 def google_query(word):    
+    if not is_ascii(word):
+        print("Returning early: " + word)        
+        return word
+    if word in '#$%&\\\'()*+,-./:;?@[\\]^_`{|}~-!@#$%^&*()|}{][,./?~`':
+        print("Returning early: " + word)
+        return word
+    
     command = "curl -s -X POST -H \"Content-Type: application/json\"     -H \"Authorization: Bearer \"$(gcloud auth application-default print-access-token) --data \"{ \'q\': \'"
     command += word 
     command += "\', \'source\': \'en\', \'target\': \'es\', \'format\': \'text\' }\" \"https://translation.googleapis.com/language/translate/v2\""
 
+
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/eric/Downloads/CreateDictionaries-26393edbc87c.json"
     result = os.popen(command).read()
     result = json.loads(result)
+    
     translation = result['data']['translations'][0]['translatedText']
+    print(word + " " + translation)
     return translation
 
 def make_translations(params, source, full_vocab):
     """
     Reload pretrained embeddings from a text file.
     """
+    word2id = {}
+    vectors = []
     translations = []
 
     # load pretrained embeddings
