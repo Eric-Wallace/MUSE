@@ -7,6 +7,7 @@
 
 import os
 from logging import getLogger
+import numpy as np
 import scipy
 import scipy.linalg
 import torch
@@ -50,6 +51,9 @@ class Trainer(object):
         self.best_valid_metric = -1e12
 
         self.decrease_lr = False
+
+        # translations collected from active learning
+        self.collected_dico = []
 
     def get_dis_xy(self, volatile):
         """
@@ -152,6 +156,12 @@ class Trainer(object):
         else:
             self.dico = load_dictionary(dico_train, word2id1, word2id2)
 
+        # save dico_train as a oracle for querying for active learning
+        # NOTE: we only keep one translation for each source word
+        self.gold_dico = dict()
+        for x, y in self.dico:
+            self.gold_dico[x] = y
+
         # cuda
         if self.params.cuda:
             self.dico = self.dico.cuda()
@@ -165,13 +175,22 @@ class Trainer(object):
         src_emb = src_emb / src_emb.norm(2, 1, keepdim=True).expand_as(src_emb)
         tgt_emb = tgt_emb / tgt_emb.norm(2, 1, keepdim=True).expand_as(tgt_emb)
 
-        if self.params.AL != None:            
-            dico_filename = '%s-%s.0-5000.txt' % (self.params.src_lang, self.params.tgt_lang)
-            dico_path = os.path.join(DIC_EVAL_PATH, dico_filename)
-            self.dico = build_dictionary(src_emb, tgt_emb, self.params, AL=self.params.AL, num_words=self.params.num_AL_words, dictionary_path=dico_path,
-                word2id1=self.src_dico.word2id, word2id2=self.tgt_dico.word2id)        
-        else:    
-            self.dico = build_dictionary(src_emb, tgt_emb, self.params)
+        self.dico = build_dictionary(src_emb, tgt_emb, self.params,
+                                     collected_dico=self.collected_dico)
+
+    def query(self, method, num_words):
+        """
+        Query translations from the gold dictionary using some AL strategy.
+        """
+        if method == 'random':
+            # randomly sample words from gold dictionary.
+            queries = np.random.choice(self.gold_dico.keys(), size=num_words)
+        else:
+            logger.error('Unrecognized active learning method (--al).')
+            exit()
+        for w in queries:
+            self.collected_dico.append([int(w), int(self.gold_dico[w])])
+            del self.gold_dico[w]
 
     def procrustes(self):
         """
@@ -271,3 +290,6 @@ class Trainer(object):
 
         # write embeddings to the disk
         export_embeddings(src_emb, tgt_emb, params)
+
+        # write mapping to the disk
+        self.mapping.save_state_dict(os.path.join(params.exp_path, 'map.pth'))
