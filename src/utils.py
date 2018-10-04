@@ -335,7 +335,7 @@ def read_txt_embeddings(params, source, full_vocab):
     """
     Reload pretrained embeddings from a text file.
     """
-    make_translations(params,source,full_vocab)
+    # make_translations(params,source,full_vocab)
     word2id = {}
     vectors = []
 
