@@ -6,7 +6,6 @@
 #
 
 import os
-import json
 import io
 import re
 import sys
@@ -22,7 +21,7 @@ from logging import getLogger
 
 from .logger import create_logger
 from .dictionary import Dictionary
-import os
+
 
 MAIN_DUMP_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'dumped')
 
@@ -261,8 +260,6 @@ def clip_parameters(model, clip):
         for x in model.parameters():
             x.data.clamp_(-clip, clip)
 
-def is_ascii(s):
-    return all(ord(c) < 128 for c in s)
 
 def read_txt_embeddings(params, source, full_vocab):
     """

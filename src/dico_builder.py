@@ -245,8 +245,8 @@ def get_candidates(emb1, emb2, params):
         all_pairs = all_pairs.masked_select(mask).view(-1, 2)
     return all_pairs
 
-def build_dictionary(src_emb, tgt_emb, params, s2t_candidates=None, t2s_candidates=None, AL=None,
-                     num_words=None, dictionary_path=None, word2id1=None, word2id2=None):
+def build_dictionary(src_emb, tgt_emb, params, s2t_candidates=None, t2s_candidates=None,
+                     collected_dico=None):
     """
     Build a training dictionary given current embeddings / mapping.
     """
@@ -280,12 +280,10 @@ def build_dictionary(src_emb, tgt_emb, params, s2t_candidates=None, t2s_candidat
                 return None
         dico = torch.LongTensor(list([[int(a), int(b)] for (a, b) in final_pairs]))
 
+    # combine collected dictionary with automatically aligned dictionary
+    # TODO: maybe remove inconsistent entries between dico and collected_dico
+    if collected_dico is not None:
+        dico = torch.cat((dico, torch.LongTensor(collected_dico)), 0)
+
     logger.info('New train dictionary of %i pairs.' % dico.size(0))
-    if AL == 'random':
-        dico = AL_random(dico, src_emb, tgt_emb, num_words=num_words, dictionary_path=dictionary_path, word2id1=word2id1, word2id2=word2id2) 
-    if AL == 'mostFrequent':
-        dico = AL_mostFrequent(dico, src_emb, tgt_emb, num_words=num_words, dictionary_path=dictionary_path, word2id1=word2id1, word2id2=word2id2) 
-    if AL == 'leastFrequent':
-        dico = AL_leastFrequent(dico, src_emb, tgt_emb, num_words=num_words, dictionary_path=dictionary_path, word2id1=word2id1, word2id2=word2id2)         
-        
     return dico.cuda() if params.cuda else dico

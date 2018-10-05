@@ -61,6 +61,8 @@ def build_model(params, with_dis):
     mapping = nn.Linear(params.emb_dim, params.emb_dim, bias=False)
     if getattr(params, 'map_id_init', True):
         mapping.weight.data.copy_(torch.diag(torch.ones(params.emb_dim)))
+    if hasattr(params, 'map'):
+        mapping.load_state_dict(params.map)
 
     # discriminator
     discriminator = Discriminator(params) if with_dis else None
