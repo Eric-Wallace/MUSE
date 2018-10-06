@@ -290,7 +290,3 @@ class Trainer(object):
 
         # write embeddings to the disk
         export_embeddings(src_emb, tgt_emb, params)
-
-        # write mapping to the disk
-        torch.save(self.mapping.state_dict(),
-                   os.path.join(params.exp_path, 'map.pth'))

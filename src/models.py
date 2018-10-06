@@ -5,6 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+import os
 import torch
 from torch import nn
 
@@ -62,7 +63,11 @@ def build_model(params, with_dis):
     if getattr(params, 'map_id_init', True):
         mapping.weight.data.copy_(torch.diag(torch.ones(params.emb_dim)))
     if hasattr(params, 'map'):
-        mapping.load_state_dict(torch.load(params.map))
+        assert os.path.isfile(params.map)
+        to_reload = torch.from_numpy(torch.load(params.map))
+        W = mapping.weight.data
+        assert to_reload.size() == W.size()
+        W.copy_(to_reload.type_as(W))
 
     # discriminator
     discriminator = Discriminator(params) if with_dis else None
