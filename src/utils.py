@@ -6,7 +6,6 @@
 #
 
 import os
-import json
 import io
 import re
 import sys
@@ -22,7 +21,7 @@ from logging import getLogger
 
 from .logger import create_logger
 from .dictionary import Dictionary
-import os
+
 
 MAIN_DUMP_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'dumped')
 
@@ -261,81 +260,11 @@ def clip_parameters(model, clip):
         for x in model.parameters():
             x.data.clamp_(-clip, clip)
 
-def is_ascii(s):
-    return all(ord(c) < 128 for c in s)
-
-def google_query(word):    
-    if not is_ascii(word):
-        print("Returning early: " + word)        
-        return word
-    if word in '#$%&\\\'()*+,-./:;?@[\\]^_`{|}~-!@#$%^&*()|}{][,./?~`':
-        print("Returning early: " + word)
-        return word
-    
-    command = "curl -s -X POST -H \"Content-Type: application/json\"     -H \"Authorization: Bearer \"$(gcloud auth application-default print-access-token) --data \"{ \'q\': \'"
-    command += word 
-    command += "\', \'source\': \'en\', \'target\': \'es\', \'format\': \'text\' }\" \"https://translation.googleapis.com/language/translate/v2\""
-
-
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/eric/Downloads/CreateDictionaries-26393edbc87c.json"
-    result = os.popen(command).read()
-    result = json.loads(result)
-    
-    translation = result['data']['translations'][0]['translatedText']
-    print(word + " " + translation)
-    return translation
-
-def make_translations(params, source, full_vocab):
-    """
-    Reload pretrained embeddings from a text file.
-    """
-    word2id = {}
-    vectors = []
-    translations = []
-
-    # load pretrained embeddings
-    lang = params.src_lang if source else params.tgt_lang
-    emb_path = params.src_emb if source else params.tgt_emb
-    _emb_dim_file = params.emb_dim
-    with io.open(emb_path, 'r', encoding='utf-8', newline='\n', errors='ignore') as f:
-        for i, line in enumerate(f):
-            if i == 0:
-                split = line.split()
-                assert len(split) == 2
-                assert _emb_dim_file == int(split[1])
-            else:
-                word, vect = line.rstrip().split(' ', 1)
-                if not full_vocab:
-                    word = word.lower()
-                vect = np.fromstring(vect, sep=' ')
-                if np.linalg.norm(vect) == 0:  # avoid to have null embeddings
-                    vect[0] = 0.01
-                if word in word2id:
-                    if full_vocab:
-                        logger.warning("Word '%s' found twice in %s embedding file"
-                                       % (word, 'source' if source else 'target'))
-                else:
-                    if not vect.shape == (_emb_dim_file,):
-                        logger.warning("Invalid dimension (%i) for %s word '%s' in line %i."
-                                       % (vect.shape[0], 'source' if source else 'target', word, i))
-                        continue
-                    assert vect.shape == (_emb_dim_file,), i
-                    word2id[word] = len(word2id)
-                    vectors.append(vect[None])
-                    translation = google_query(word)
-                    translations.append((word, translation))
-            if params.max_vocab > 0 and len(word2id) >= params.max_vocab and not full_vocab:
-                break
-
-    assert len(word2id) == len(vectors)
-    output = open('data.pkl', 'wb')
-    pickle.dump(translations, output)    
 
 def read_txt_embeddings(params, source, full_vocab):
     """
     Reload pretrained embeddings from a text file.
     """
-    # make_translations(params,source,full_vocab)
     word2id = {}
     vectors = []
 
@@ -368,7 +297,6 @@ def read_txt_embeddings(params, source, full_vocab):
                     assert vect.shape == (_emb_dim_file,), i
                     word2id[word] = len(word2id)
                     vectors.append(vect[None])
-                    google_query(word)
             if params.max_vocab > 0 and len(word2id) >= params.max_vocab and not full_vocab:
                 break
 
