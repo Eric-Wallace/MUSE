@@ -292,4 +292,5 @@ class Trainer(object):
         export_embeddings(src_emb, tgt_emb, params)
 
         # write mapping to the disk
-        self.mapping.save_state_dict(os.path.join(params.exp_path, 'map.pth'))
+        torch.save(self.mapping.state_dict(),
+                   os.path.join(params.exp_path, 'map.pth'))

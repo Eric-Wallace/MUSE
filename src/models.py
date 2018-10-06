@@ -62,7 +62,7 @@ def build_model(params, with_dis):
     if getattr(params, 'map_id_init', True):
         mapping.weight.data.copy_(torch.diag(torch.ones(params.emb_dim)))
     if hasattr(params, 'map'):
-        mapping.load_state_dict(params.map)
+        mapping.load_state_dict(torch.load(params.map))
 
     # discriminator
     discriminator = Discriminator(params) if with_dis else None
