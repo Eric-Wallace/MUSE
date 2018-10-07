@@ -160,7 +160,7 @@ class Trainer(object):
         # NOTE: we only keep one translation for each source word
         self.gold_dico = dict()
         for x, y in self.dico:
-            self.gold_dico[x] = y
+            self.gold_dico[int(x)] = int(y)
 
         # cuda
         if self.params.cuda:
@@ -184,13 +184,14 @@ class Trainer(object):
         """
         if method == 'random':
             # randomly sample words from gold dictionary.
-            queries = np.random.choice(self.gold_dico.keys(), size=num_words)
+            queries = np.random.choice(self.gold_dico.keys(), num_words, replace=False)
         else:
             logger.error('Unrecognized active learning method (--al).')
             exit()
         for w in queries:
             self.collected_dico.append([int(w), int(self.gold_dico[w])])
-            del self.gold_dico[w]
+            # delete quried words to avoid repeated query
+            self.gold_dico.pop(w)  
 
     def procrustes(self):
         """
