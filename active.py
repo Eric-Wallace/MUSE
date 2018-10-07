@@ -34,7 +34,6 @@ def main():
     # training refinement
     parser.add_argument("--n_refinement", type=int, default=5, help="Number of refinement iterations (0 to disable the refinement procedure)")
     # dictionary creation parameters (for refinement)
-    parser.add_argument("--dico_gold", type=str, required=True, help="Path to gold translations.")
     parser.add_argument("--dico_eval", type=str, default="default", help="Path to evaluation dictionary")
     parser.add_argument("--dico_method", type=str, default='csls_knn_10', help="Method used for dictionary generation (nn/invsm_beta_30/csls_knn_10)")
     parser.add_argument("--dico_build", type=str, default='S2T&T2S', help="S2T,T2S,S2T|T2S,S2T&T2S")
@@ -48,6 +47,7 @@ def main():
     parser.add_argument("--normalize_embeddings", type=str, default="", help="Normalize embeddings before training")
 
     # active learning options
+    parser.add_argument("--dico_gold", type=str, required=True, help="Path to gold translations.")
     parser.add_argument('--map', type=str, required=True, help='Initial mapping')
     parser.add_argument("--n_query", type=int, required=True, help='Number of queries')
     parser.add_argument("--al", required=True, help='Active learning strategy')
