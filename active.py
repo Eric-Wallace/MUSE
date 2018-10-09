@@ -80,7 +80,6 @@ def main():
     trainer.query(params.al, params.n_query)
 
     # define the validation metric
-    # TODO: not sure if this is the right metric
     VALIDATION_METRIC = VALIDATION_METRIC_UNSUP
     logger.info("Validation metric: %s" % VALIDATION_METRIC)
 
