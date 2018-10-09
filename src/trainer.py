@@ -183,9 +183,10 @@ class Trainer(object):
         Query translations from the gold dictionary using some AL strategy.
         """
         if method == 'random':
-            # randomly sample words from gold dictionary.
+            # randomly sample words from gold dictionary
             queries = np.random.choice(self.gold_dico.keys(), num_words, replace=False)
         elif method == 'most_frequent':
+            # query the most frequent words
             queries = []
             i = 0
             while len(queries) < num_words:
