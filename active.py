@@ -57,7 +57,7 @@ def main():
 
     # check parameters
     assert not params.cuda or torch.cuda.is_available()
-    assert os.path.isfile(params.dico_gold)
+    assert os.path.isfile(params.dico_gold) or params.dico_gold == 'default'
     assert params.dico_build in ["S2T", "T2S", "S2T|T2S", "S2T&T2S"]
     assert params.dico_max_size == 0 or params.dico_max_size < params.dico_max_rank
     assert params.dico_max_size == 0 or params.dico_max_size > params.dico_min_size
@@ -80,7 +80,8 @@ def main():
     trainer.query(params.al, params.n_query)
 
     # define the validation metric
-    VALIDATION_METRIC = VALIDATION_METRIC_UNSUP if params.dico_train == 'identical_char' else VALIDATION_METRIC_SUP
+    # TODO: not sure if this is the right metric
+    VALIDATION_METRIC = VALIDATION_METRIC_UNSUP
     logger.info("Validation metric: %s" % VALIDATION_METRIC)
 
 

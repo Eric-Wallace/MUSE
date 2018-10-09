@@ -184,7 +184,7 @@ class Trainer(object):
         """
         if method == 'random':
             # randomly sample words from gold dictionary.
-            queries = np.random.choice(self.gold_dico.keys(), size=num_words)
+            queries = np.random.choice(self.gold_dico.keys(), num_words, replace=False)
         elif method == 'most_frequent':
             queries = []
             i = 0
@@ -196,8 +196,9 @@ class Trainer(object):
             logger.error('Unrecognized active learning method (--al).')
             exit()
         for w in queries:
-            self.collected_dico.append([w, self.gold_dico[w]])
-            del self.gold_dico[w]
+            self.collected_dico.append([int(w), int(self.gold_dico[w])])
+            # delete queried words to avoid repeated query
+            self.gold_dico.pop(w)
 
     def procrustes(self):
         """
