@@ -185,14 +185,14 @@ class Trainer(object):
         if method == 'random':
             # randomly sample words from gold dictionary
             queries = np.random.choice(self.gold_dico.keys(), num_words, replace=False)
-        elif method == 'most_frequent':
+        elif method == 'frequent':
             # query the most frequent words
             queries = []
             i = 0
             while len(queries) < num_words:
                 if i in self.gold_dico:
                     queries.append(i)
-                    i += 1
+                i += 1
         else:
             logger.error('Unrecognized active learning method (--al).')
             exit()
