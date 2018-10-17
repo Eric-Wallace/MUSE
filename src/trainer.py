@@ -193,9 +193,25 @@ class Trainer(object):
                 if i in self.gold_dico:
                     queries.append(i)
                 i += 1
+        elif method == 'nn':
+            # query words with smallest cos similarity to its nearest neighbor
+            emb1 = self.mapping(self.src_emb.weight).data
+            emb2 = self.tgt_emb.weight.data
+            emb1 = emb1 / emb1.norm(2, 1, keepdim=True).expand_as(emb1)
+            emb2 = emb2 / emb2.norm(2, 1, keepdim=True).expand_as(emb2)
+
+            all_scores = []
+            for i in self.gold_dico:
+                # compute target words scores
+                best_score, _ = emb2.mv(emb1[i]).max(0)
+                all_scores.append((best_score, i))
+            all_scores.sort()
+            queries = [w for _, w in all_scores[:num_words]]
         else:
             logger.error('Unrecognized active learning method (--al).')
             exit()
+
+        assert len(queries) == num_words
         for w in queries:
             self.collected_dico.append([int(w), int(self.gold_dico[w])])
             # delete queried words to avoid repeated query
