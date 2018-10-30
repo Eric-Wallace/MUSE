@@ -74,10 +74,8 @@ parser.add_argument("--src_emb", type=str, default="", help="Reload source embed
 parser.add_argument("--tgt_emb", type=str, default="", help="Reload target embeddings")
 parser.add_argument("--normalize_embeddings", type=str, default="", help="Normalize embeddings before training")
 
-
-# active learning
-parser.add_argument("--AL", type=str, default="", help="Active Learning Strategy (random/mostFrequent/leastFrequent)")
-parser.add_argument("--num_AL_words", type=int, default=500, help="Number of Active Learning Words")
+# add a parameter to disable early stopping
+parser.add_argument("--no_stop", type=bool_flag, default=False, help='Disable early stopping.')
 
         
 
@@ -188,5 +186,6 @@ if params.n_refinement > 0:
 
 # export embeddings
 if params.export:
-    trainer.reload_best()
+    if params.no_stop:
+        trainer.reload_best()
     trainer.export()
